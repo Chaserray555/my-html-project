@@ -1,5 +1,6 @@
 :root{--bg:#0d0f1a;--c1:#12142400;--card:#171a2e;--txt:#e8eaf6;--acc:#7c4dff;--acc2:#ff4081;--dim:#8a8fa8}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 button{touch-action:manipulation}
 body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;min-height:100dvh;overflow-x:hidden;overscroll-behavior-y:none;
@@ -28,7 +29,7 @@ h1 span{font-size:.6em;color:var(--dim);background:none}
 #hs{font-size:.75rem;color:#c7b3ff;white-space:nowrap}
 #stage{position:relative;margin:4px auto;border-radius:16px;border:2px solid #262a4a;overflow:hidden;background:#000;touch-action:none}
 #cv{display:block;width:100%;max-width:540px;margin:0 auto;height:auto;touch-action:none}
-#overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#05060ef2;z-index:5;text-align:center;padding:20px}
+#overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#05060ef2;z-index:5;text-align:center;padding:20px;pointer-events:none}
 #ovtitle{font-size:1.6rem;font-weight:700}
 #ovmsg{margin:10px 0;color:#ffcf7a;white-space:pre-line;font-size:1rem;line-height:1.4}
 #ovhint{color:var(--dim);font-size:.85rem;margin-top:8px}
