@@ -50,7 +50,8 @@ const ARCADE = (() => {
     $('#ovmsg').textContent = g.desc || '';
     $('#ovhint').textContent = (g.tags || 'Tap anywhere') + '  •  Tap / Space to start · R restarts · ⌫ back to menu';
     $('#padL').hidden = true; $('#padA').hidden = true;
-    stopLoop(); freshState(); drawReady();
+    document.body.classList.add('playing');
+    stopLoop(); fitCanvas(); freshState(); drawReady();
     location.hash = g.id;
   }
   function endGame(msg = '') {
@@ -71,6 +72,20 @@ const ARCADE = (() => {
     inst.env = env;
     if (cur.auto) state = 'play';
   }
+  function fitCanvas() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (cv.width === W * dpr && cv.height === H * dpr) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return; }
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+  }
+  window.addEventListener('resize', () => { fitCanvas(); if (state === 'ready') drawReady(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopLoop();
+    else if (state === 'play' && !raf) { tLast = performance.now(); raf = requestAnimationFrame(loop); }
+  });
+  cv.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('gesturestart', e => { if (!$('#player').hidden) e.preventDefault(); });
   function drawReady() {
     ctx.fillStyle = '#0a0b14'; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#333a5e'; ctx.font = '120px serif'; ctx.textAlign = 'center';
@@ -89,7 +104,7 @@ const ARCADE = (() => {
       try { inst.update && inst.update(t / 1000, dt, inst.env); inst.draw && inst.draw(ctx, inst.env); } catch (e) { console.error(e); }
     }
   }
-  function stopLoop() { cancelAnimationFrame(raf); }
+  function stopLoop() { if (raf) cancelAnimationFrame(raf); raf = 0; }
 
   let inst = {};  function begin() {
     state = 'play'; $('#overlay').hidden = true; tLast = performance.now();
@@ -150,7 +165,7 @@ const ARCADE = (() => {
   document.addEventListener('keyup', e => { const k = norm(e.key); keys.delete(k); });
   window.addEventListener('blur', () => { keys.clear(); });
 
-  function goMenu() { stopLoop(); cur = null; state = 'idle'; $('#player').hidden = true; $('#grid').hidden = false; if (location.hash) history.replaceState(null, '', ' '); render(); }
+  function goMenu() { stopLoop(); cur = null; state = 'idle'; document.body.classList.remove('playing'); $('#player').hidden = true; $('#grid').hidden = false; if (location.hash) history.replaceState(null, '', ' '); render(); }
 
   $('#back').onclick = goMenu;
   $('#rs').onclick = restart;

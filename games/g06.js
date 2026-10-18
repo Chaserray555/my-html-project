@@ -339,6 +339,15 @@ ARCADE.add({
       if (k === 'action') return submit();
       if (k === 'backspace' && s.cur.length) s.cur.pop();
     });
+    env.tap((x, y) => {
+      if (y < 470) return;
+      const row = Math.min(3, Math.floor((y - 470) / 64));
+      const i = Math.floor((x - 18) / 64);
+      if (row < 0 || row > 3 || i < 0) return;
+      if (row <= 2) { const L = 'abcdefghijklmnopqrstu'[row * 7 + i]; if (L && s.cur.length < 5) s.cur.push(L); return; }
+      if (i === 5 && s.cur.length) s.cur.pop();
+      if (i >= 6) submit();
+    });
     return {
       update(t, dt) {},
       draw(c) {
@@ -346,17 +355,33 @@ ARCADE.add({
         for (let r = 0; r < 6; r++) {
           const g = s.rows[r] || (r === s.tries ? s.cur.join('') : '');
           for (let i = 0; i < 5; i++) {
-            const X = 105 + i*55, Y = 120 + r*62;
+            const X = 105 + i*55, Y = 80 + r*58;
             let col = '#1d2040';
             if (s.rows[r]) {
               if (s.rows[r][i] === word[i]) col = '#4dff88';
               else if (word.includes(s.rows[r][i])) col = '#ffd24d';
             }
-            c.fillStyle = col; c.fillRect(X, Y, 50, 54);
-            if (g[i]) U.txt(c, g[i], X+25, Y+38, 30, '#fff');
+            c.fillStyle = col; c.fillRect(X, Y, 50, 50);
+            if (g[i]) U.txt(c, g[i], X+25, Y+36, 28, '#fff');
           }
         }
-        U.txt(c, 'TAP-pad: type letters · 🎯 = enter', W/2, 690, 15, '#8a8fa8');
+        const kb = 'abcdefghijklmnopqrstu';
+        for (let i = 0; i < 21; i++) {
+          const X = 18 + (i % 7)*64, Y = 470 + Math.floor(i/7)*64;
+          c.fillStyle = '#7c4dff'; c.fillRect(X, Y, 58, 56);
+          U.txt(c, kb[i].toUpperCase(), X+29, Y+38, 26, '#fff');
+        }
+        const Y3 = 598;
+        'vwxyz'.split('').forEach((L, i) => {
+          const X = 18 + i*64;
+          c.fillStyle = '#7c4dff'; c.fillRect(X, Y3, 58, 56);
+          U.txt(c, L.toUpperCase(), X+29, Y3+38, 26, '#fff');
+        });
+        c.fillStyle = '#66144a'; c.fillRect(18 + 5*64, Y3, 58, 56);
+        U.txt(c, '⌫', 18 + 5*64 + 29, Y3 + 38, 26, '#fff');
+        c.fillStyle = '#0e5c46'; c.fillRect(18 + 7*64, Y3, 58, 56);
+        U.txt(c, '⏎', 18 + 7*64 + 29, Y3 + 38, 26, '#fff');
+        U.txt(c, 'type or tap letters · ⌫ erase · ⏎ submit', W/2, 700, 14, '#8a8fa8');
       }
     };
   }
