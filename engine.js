@@ -20,8 +20,19 @@ const ARCADE = (() => {
   let flushKeys = [];
 
   const hsKey = id => 'ta_' + id;
-  const loadHS = id => +(localStorage.getItem(hsKey(id)) || 0);
-  const saveHS = (id, v) => { if (v > loadHS(id)) { localStorage.setItem(hsKey(id), v); return true; } return false; };
+  const loadHS = id => { try { return +(localStorage.getItem(hsKey(id)) || 0); } catch (e) { return 0; } };
+  const saveHS = (id, v) => { try { if (v > loadHS(id)) { localStorage.setItem(hsKey(id), v); return true; } } catch (e) {} return false; };
+  function showOverlay(on) {
+    const o = $('#overlay');
+    o.hidden = !on;
+    o.style.display = on ? 'flex' : 'none';
+  }
+  function showPads(a, b) {
+    const L = $('#padL'), A = $('#padA');
+    L.hidden = !a; A.hidden = !b;
+    L.style.display = a ? 'grid' : 'none';
+    A.style.display = b ? 'grid' : 'none';
+  }
 
   function scheduleKey(k) { flushKeys.push(k); }
 
@@ -32,7 +43,7 @@ const ARCADE = (() => {
       choice: a => a[Math.floor(Math.random() * a.length)],
       saveHS, loadHS, cur,
       score(v) { score = v; }, over(msg) { endGame(msg); },
-      needPad(a, b) { $('#padL').hidden = !a; $('#padA').hidden = !b; },
+      needPad(a, b) { showPads(a, b); },
       key(fn) { keyFns.push(fn); }, anyKey(fn) { anyFns.push(fn); },
       tap(fn) { tapFns.push(fn); }, drag(fn) { dragFns.push(fn); },
       swipe(fn) { swipeFns.push(fn); }, release(fn) { relFns.push(fn); },
@@ -43,22 +54,23 @@ const ARCADE = (() => {
   function startGame(g) {
     cur = g; state = 'ready';
     $('#grid').hidden = true; $('#player').hidden = false;
+    $('#player').style.display = '';
     $('#ptitle').textContent = g.emoji + ' ' + g.name;
     $('#hs').textContent = 'Best: ' + loadHS(g.id);
-    $('#overlay').hidden = false;
+    showOverlay(true);
     $('#ovtitle').textContent = g.emoji + ' ' + g.name;
     $('#ovmsg').textContent = g.desc || '';
     $('#ovhint').textContent = (g.tags || 'Tap anywhere') + '  •  Tap / Space to start · R restarts · ⌫ back to menu';
-    $('#padL').hidden = true; $('#padA').hidden = true;
+    showPads(false, false);
     document.body.classList.add('playing');
     stopLoop(); fitCanvas(); freshState(); drawReady();
-    location.hash = g.id;
+    if (location.hash.slice(1) !== g.id) location.hash = g.id;
   }
   function endGame(msg = '') {
     state = 'over'; saveHS(cur.id, Math.floor(score));
+    showOverlay(true);
     best = loadHS(cur.id);
     $('#hs').textContent = 'Best: ' + best;
-    $('#overlay').hidden = false;
     $('#ovtitle').textContent = 'SCORE ' + Math.floor(score);
     $('#ovmsg').textContent = (msg || '') + ((Math.floor(score) >= best && Math.floor(score) > 0) ? '\n🏆 NEW BEST!' : '');
     $('#ovhint').textContent = 'Tap / Space to play again';
@@ -107,10 +119,10 @@ const ARCADE = (() => {
   function stopLoop() { if (raf) cancelAnimationFrame(raf); raf = 0; }
 
   let inst = {};  function begin() {
-    state = 'play'; $('#overlay').hidden = true; tLast = performance.now();
+    state = 'play'; showOverlay(false); tLast = performance.now();
     if (!raf) raf = requestAnimationFrame(loop);
   }
-  function restart() { if (!cur) return; stopLoop(); freshState(); if (!cur.auto) { drawReady(); begin(); } else { state = 'ready'; $('#overlay').hidden = false; $('#ovtitle').textContent = cur.emoji + ' ' + cur.name; $('#ovmsg').textContent = cur.desc || ''; $('#ovhint').textContent = 'Tap / Space to start'; drawReady(); } }
+  function restart() { if (!cur) return; stopLoop(); freshState(); if (!cur.auto) { drawReady(); begin(); } else { state = 'ready'; showOverlay(true); $('#ovtitle').textContent = cur.emoji + ' ' + cur.name; $('#ovmsg').textContent = cur.desc || ''; $('#ovhint').textContent = 'Tap / Space to start'; drawReady(); } }
   cv.addEventListener('pointerdown', e => {
     e.preventDefault();
     if (state !== 'play') { if (state === 'ready' || state === 'over') { state === 'over' ? restart() : begin(); } return; }
@@ -182,8 +194,18 @@ const ARCADE = (() => {
     });
   };
   bindPad('#padL'); bindPad('#padA');
+  $('#stage').addEventListener('pointerdown', e => {
+    if (state === 'ready' || state === 'over') {
+      if (e.target && e.target.closest && e.target.closest('.dpad')) return;
+      state === 'over' ? restart() : begin();
+    }
+  });
   $('#search').addEventListener('input', e => { query = e.target.value.toLowerCase(); render(); });
-  window.addEventListener('hashchange', () => { const g = games.find(x => x.id === location.hash.slice(1)); if (g) startGame(g); });
+  window.addEventListener('hashchange', () => {
+    if (cur && location.hash.slice(1) === cur.id) return;
+    const g = games.find(x => x.id === location.hash.slice(1));
+    if (g) startGame(g);
+  });
 
   function render() {
     const cats = ['all', ...new Set(games.map(g => g.cat))];
