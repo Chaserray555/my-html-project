@@ -1,1 +1,47 @@
-<h1>Hello from my HTML project!</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Termux Arcade — 80 Original Games</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕹️</text></svg>">
+</head>
+<body>
+<header>
+  <h1>🕹️ TERMUX ARCADE <span id="count"></span></h1>
+  <input id="search" type="text" placeholder="Search 80 games… (or press / )" autocomplete="off">
+  <div id="cats"></div>
+</header>
+<main>
+  <section id="grid"></section>
+  <section id="player" hidden>
+    <div id="playhead">
+      <button id="back">← Menu</button>
+      <div id="ptitle"></div>
+      <button id="rs">↺ Restart</button>
+      <div id="hs"></div>
+    </div>
+    <div id="stage">
+      <canvas id="cv" width="480" height="720"></canvas>
+      <div id="padL" class="dpad" hidden><button data-k="left">◀</button><button data-k="up">▲</button><button data-k="down">▼</button><button data-k="right">▶</button></div>
+      <div id="padA" class="dpad" hidden><button data-k="action">TAP</button></div>
+      <div id="overlay" hidden><div id="ovtitle"></div><div id="ovmsg"></div><div id="ovhint"></div></div>
+    </div>
+  </section>
+</main>
+<footer>Made locally with 💙 · All games written from scratch · Runs offline · <a href="https://github.com/Chaserray555/my-html-project" target="_blank" rel="noopener">source</a></footer>
+<script src="engine.js"></script>
+<script src="games/g01.js"></script>
+<script src="games/g02.js"></script>
+<script src="games/g03.js"></script>
+<script src="games/g04.js"></script>
+<script src="games/g05.js"></script>
+<script src="games/g06.js"></script>
+<script src="games/g07.js"></script>
+<script src="games/g08.js"></script>
+<script src="games/g09.js"></script>
+<script src="games/g10.js"></script>
+<script>ARCADE.boot();</script>
+</body>
+</html>
